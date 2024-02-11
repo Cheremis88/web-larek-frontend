@@ -36,11 +36,11 @@ export class AppState implements IAppState {
   }
 
   deleteFromBasket(product: Partial<TProduct>): void {
-
+    this.basket = this.basket.filter(item => item !== product);
   }
 
-  checkProduct(): boolean {
-    return this.basket.some(product => product === this.preview);
+  isPurchased(product: TProduct): boolean {
+    return this.basket.some(item => product === item);
   }
   
   isInvaluable(): boolean {

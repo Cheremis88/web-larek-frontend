@@ -79,3 +79,12 @@ export class CardPreview extends Card {
         }
     }
 }
+
+export class CardBasket extends Card {
+    protected _index: HTMLElement;
+    constructor(container: HTMLElement, index: number, actions: ICardActions) {
+        super(container, actions);
+        this._index = container.querySelector('.basket__item-index');
+        this.setText(this._index, index);
+    }
+}
