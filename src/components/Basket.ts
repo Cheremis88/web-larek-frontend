@@ -33,12 +33,19 @@ export class Basket extends Component<IBasketView> {
           this._list.replaceChildren(...items);
       } else {
           this._list.replaceChildren(createElement<HTMLParagraphElement>('p', {
-              textContent: 'Корзина пуста'
+              textContent: 'Если вы ничего не купите, мы будем вынуждены подать в суд.'
           }));
       }
   }
 
   set total(total: number) {
-      this.setText(this._total, total + ' синапсов');
+      if (!total) {
+        this.setText(this._total, 'Оформлять нечего :(');
+        this.setDisabled(this._button, true);
+      } else {
+
+        this.setText(this._total, total + ' синапсов');
+        this.setDisabled(this._button, false);
+      }
   }
 }

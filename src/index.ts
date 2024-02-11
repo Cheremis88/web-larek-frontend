@@ -80,6 +80,8 @@ events.on('basket:changed', (item: TProduct) => {
       price: item.price,
     });
   });
+  
+  basket.total = appData.totalPrice;
 
   if (appData.preview.id) {
     events.emit('preview:changed', item);
@@ -89,6 +91,7 @@ events.on('basket:changed', (item: TProduct) => {
 });
 
 events.on('basket:open', () => {
+  basket.total = appData.totalPrice;
   modal.render({
     content: basket.render()
   });

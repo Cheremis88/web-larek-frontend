@@ -17,7 +17,7 @@ export class AppState implements IAppState {
   constructor(protected _events: IEvents) {}
 
   get totalPrice(): number {
-    return
+    return this.basket.reduce((acc, item) => acc += item.price, 0)
   }
   
   setCatalog(products: TProduct[]) {
