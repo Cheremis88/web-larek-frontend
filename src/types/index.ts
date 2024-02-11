@@ -7,19 +7,19 @@ export type TProduct = {
   price: number | null,
 }
 
-export type TOrderFirst = {
+export type TOrderPayment = {
   payment: 'online' | 'offline',
   address: string,
 }
 
-export type TOrderSecond = {
+export type TOrderContacts = {
   email: string,
   phone: string,
   total: number,
   items: string[],
 }
 
-export type TOrder = TOrderFirst & TOrderSecond;
+export type TOrder = TOrderPayment & TOrderContacts;
 
 export type TOrderResult = {
   id: string,

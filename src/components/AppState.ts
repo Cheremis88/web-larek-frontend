@@ -1,8 +1,7 @@
 import {IAppState, TProduct, TOrder} from "../types";
 import { EventEmitter, IEvents } from "./base/EventEmitter";
 
-class AppState implements IAppState {
-  protected _events: IEvents;
+export class AppState implements IAppState {
   catalog: TProduct[] = [];
   basket: Partial<TProduct>[] = [];
   preview: Partial<TProduct> = {};
@@ -15,20 +14,25 @@ class AppState implements IAppState {
     items: [],
   }
   
+  constructor(protected _events: IEvents) {}
+
   get totalPrice(): number {
     return
   }
   
   setCatalog(products: TProduct[]) {
-
+    this.catalog = products;
+    this._events.emit('catalog:changed');
   }
 
   setPreview(product: TProduct) {
-
+    this.preview = product;
+    this._events.emit('preview:changed', product);
   }
 
   addToBasket(product: Partial<TProduct>): void {
-
+    this.basket.push(product);
+    this._events.emit('preview:changed', product);
   }
 
   deleteFromBasket(product: Partial<TProduct>): void {
@@ -36,10 +40,10 @@ class AppState implements IAppState {
   }
 
   checkProduct(): boolean {
-    return
+    return this.basket.some(product => product === this.preview);
   }
   
   isInvaluable(): boolean {
-    return
+    return !this.preview.price;
   }
 }
