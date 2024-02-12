@@ -46,4 +46,9 @@ export class AppState implements IAppState {
   isInvaluable(): boolean {
     return !this.preview.price;
   }
+
+  formOrder(): void {
+    this.order.total = this.totalPrice;
+    this.order.items = this.basket.map(item => item.id);
+  }
 }

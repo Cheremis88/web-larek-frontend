@@ -8,9 +8,10 @@ import { AppState } from './components/AppState';
 import { Page } from './components/Page';
 import { Modal } from './components/Modal';
 import { Card, CardBasket, CardPreview, ICardActions } from './components/Card';
-import { TOrder, TOrderCommon, TOrderContacts, TOrderPayment, TProduct } from './types';
+import { TOrder, TOrderCommon, TOrderContacts, TOrderPayment, TOrderResult, TProduct } from './types';
 import { Basket } from './components/Basket';
 import { Form, Payment } from './components/Order';
+import { Success } from './components/Success';
 
 const events = new EventEmitter();
 const api = new PurchaseApi(API_URL, CDN_URL);
@@ -22,7 +23,7 @@ const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
 const cardBasketTemplate = ensureElement<HTMLTemplateElement>('#card-basket');
 const basketTemplate = ensureElement<HTMLTemplateElement>('#basket');
 const orderPaymentTemplate = ensureElement<HTMLTemplateElement>('#order');
-const orderContactsTemplate = ensureElement<HTMLTemplateElement>('#order');
+const orderContactsTemplate = ensureElement<HTMLTemplateElement>('#contacts');
 const successTemplate = ensureElement<HTMLTemplateElement>('#success');
 
 const page = new Page(document.body, events);
@@ -99,6 +100,9 @@ events.on('basket:open', () => {
 })
 
 events.on('order:open', () => {
+  
+  appData.formOrder();
+
   modal.render({
     content: payment.render({
       valid: false,
@@ -111,7 +115,32 @@ events.on('order:changed', (data: {field: keyof TOrderCommon, value: string}) =>
   appData.order[data.field] = data.value;
   payment.valid = !!appData.order.payment && !!appData.order.address;
   order.valid = !!appData.order.email && !!appData.order.phone;
+});
+
+events.on('payment:submit', () => {
+  modal.render({
+    content: order.render({
+      valid: false
+    })
+  });
+});
+
+events.on('order:submit', () => {
+  api.orderProducts(appData.order)
+  .then(data => events.emit('order:success', data))
+  .catch(err => console.log(err));
 })
+
+events.on('order:success', (data: TOrderResult) => {
+  appData.basket = [];
+  page.counter = 0;
+  basket.items = [];
+  basket.total = 0;
+  const success = new Success(cloneTemplate(successTemplate), () => modal.close());
+  modal.render({
+    content: success.render({total: data.total})
+  });
+});
 
 events.on('modal:open', () => {
   page.locked = true;

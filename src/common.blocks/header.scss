@@ -4,6 +4,9 @@
 .header {
   height: $headerHeight;
   background-color: $primary;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 
   &__container {
     @include mixins.container(45px,45px);

@@ -36,13 +36,7 @@ export class Form<T> extends Component<IFormState> {
 
     set valid(value: boolean) {
         this._submit.disabled = !value;
-    }
-
-    render(data: IFormState) {
-        super.render(data);
-        this.container.reset();
-        return this.container;
-    }
+    } 
 }
 
 export interface IPayment {

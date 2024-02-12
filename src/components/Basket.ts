@@ -34,7 +34,7 @@ export class Basket extends Component<IBasket> {
           this._list.replaceChildren(...items);
       } else {
           this._list.replaceChildren(createElement<HTMLParagraphElement>('p', {
-              textContent: 'Если вы ничего не купите, мы будем вынуждены подать в суд.'
+              textContent: 'Корзина пуста, чья в этом вина?'
           }));
       }
   }
