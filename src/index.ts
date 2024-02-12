@@ -8,8 +8,9 @@ import { AppState } from './components/AppState';
 import { Page } from './components/Page';
 import { Modal } from './components/Modal';
 import { Card, CardBasket, CardPreview, ICardActions } from './components/Card';
-import { TProduct } from './types';
+import { TOrder, TOrderCommon, TOrderContacts, TOrderPayment, TProduct } from './types';
 import { Basket } from './components/Basket';
+import { Form, Payment } from './components/Order';
 
 const events = new EventEmitter();
 const api = new PurchaseApi(API_URL, CDN_URL);
@@ -27,6 +28,8 @@ const successTemplate = ensureElement<HTMLTemplateElement>('#success');
 const page = new Page(document.body, events);
 const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
 const basket = new Basket(cloneTemplate(basketTemplate), events);
+const order = new Form<TOrderContacts>(cloneTemplate(orderContactsTemplate), events);
+const payment = new Payment(cloneTemplate(orderPaymentTemplate), events);
 
 events.on('catalog:changed', () => {
   page.catalog = appData.catalog.map(item => {
@@ -64,7 +67,6 @@ events.on('preview:changed', (item: TProduct) => {
   });
 });
 
-
 events.on('basket:changed', (item: TProduct) => {
   if (appData.isPurchased(item)) {
     appData.deleteFromBasket(item);
@@ -91,22 +93,34 @@ events.on('basket:changed', (item: TProduct) => {
 });
 
 events.on('basket:open', () => {
-  basket.total = appData.totalPrice;
   modal.render({
     content: basket.render()
   });
+})
+
+events.on('order:open', () => {
+  modal.render({
+    content: payment.render({
+      valid: false,
+      selected: ''
+    })
+  });
+});
+
+events.on('order:changed', (data: {field: keyof TOrderCommon, value: string}) => {
+  appData.order[data.field] = data.value;
+  payment.valid = !!appData.order.payment && !!appData.order.address;
+  order.valid = !!appData.order.email && !!appData.order.phone;
 })
 
 events.on('modal:open', () => {
   page.locked = true;
 });
 
-// ... и разблокируем
 events.on('modal:close', () => {
   page.locked = false;
   appData.preview = {};
 });
-
 
 api.getProductList()
   .then(appData.setCatalog.bind(appData))

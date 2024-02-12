@@ -64,17 +64,29 @@ export class Card extends Component<TProduct> {
     }
 }
 
-export class CardPreview extends Card {
+interface ICardPreview {
+    setButtonText(result: boolean): void;
+    setButtonState(result: boolean): void;
+}
+
+export class CardPreview extends Card implements ICardPreview {
     constructor(container: HTMLElement, inBasket: boolean, isInvaluable: boolean, actions: ICardActions) {
         super(container, actions);
 
-        if (inBasket) {
+        this.setButtonText(inBasket);
+        this.setButtonState(isInvaluable); 
+    }
+
+    setButtonText(result: boolean) {
+        if (result) {
             this.setText(this._button, 'Убрать');
         } else {
             this.setText(this._button, 'Купить');
         }
+    }
 
-        if (isInvaluable) {
+    setButtonState(result: boolean) {
+        if (result) {
             this.setDisabled(this._button, true);
         }
     }

@@ -8,18 +8,18 @@ export type TProduct = {
 }
 
 export type TOrderPayment = {
-  payment: 'online' | 'offline',
+  payment: string,
   address: string,
 }
 
 export type TOrderContacts = {
   email: string,
   phone: string,
-  total: number,
-  items: string[],
 }
 
-export type TOrder = TOrderPayment & TOrderContacts;
+export type TOrderCommon = TOrderPayment & TOrderContacts;
+
+export type TOrder = TOrderCommon & {total: number, items: string[]};
 
 export type TOrderResult = {
   id: string,

@@ -6,7 +6,7 @@ export class AppState implements IAppState {
   basket: Partial<TProduct>[] = [];
   preview: Partial<TProduct> = {};
   order: TOrder = {
-    payment: 'online',
+    payment: '',
     address: '',
     email: '',
     phone: '',
