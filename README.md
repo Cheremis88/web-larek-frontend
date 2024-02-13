@@ -199,7 +199,7 @@ set locked(value: boolean); // ставит и снимает блокировк
 
 **Рендерит внутри себя контент других компонентов**
 
-Свойство `_content` содержит DOM-элемент, содержимое которого будет заменяться:
+Свойство `_content` хранит DOM-элемент, содержимое которого будет заменяться:
 ```ts
 protected _closeButton: HTMLButtonElement;
 protected _content: HTMLElement;
@@ -261,8 +261,94 @@ protected _index: HTMLElement;
 constructor(container: HTMLElement, index: number, actions: ICardActions)
 ```
 
+### class Basket extends Component\<IBasket\>
 
-### Слой связи (презентер)
+**Отвечает за отображение товаров в корзине и кнопки "Оформить"**
+
+Стандартный конструктор. В свойстве `_list` лежит контейнер списка товаров, содержимое которого может меняться:
+```ts
+protected _list: HTMLElement;
+protected _total: HTMLElement;
+protected _button: HTMLElement;
+
+constructor(container: HTMLElement, protected events: EventEmitter)
+```
+Методы (сеттеры) соответствуют интерфейсу `IBasket`:
+```ts
+set items(items: HTMLElement[]); // заменяет содержимое списка товаров
+set total(total: number); // отображает общую стоимость и в зависимости от значения меняет активность кнопки
+```
+
+### class Form\<T\> extends Component\<IFormState\>
+
+**Работает с базовой формой заказа (поля ввода и кнопка), является родителем класса Payment**
+
+Свойство `_submit` хранит элемент кнопки, в конструкторе элементу формы задаются слушатели событий `input` и `submit`:
+```ts
+protected _submit: HTMLButtonElement;
+constructor(protected container: HTMLFormElement, protected events: IEvents);
+```
+Без нужных методов никуда:
+```ts
+protected onOrderChange(field: keyof T, value: string); // отдает эмиттеру данные от слушателей
+set valid(value: boolean); // меняет активность кнопки в зависимости от заполненных полей
+```
+
+### class Payment extends Form\<TOrderPayment\>
+
+**Расширяет класс Form для удобной работы с кнопками способа оплаты**
+
+Поле `_buttons` хранит массив кнопок, найденных в конструкторе:
+```ts
+protected _buttons: HTMLButtonElement[];
+constructor(protected container: HTMLFormElement, protected events: IEvents);
+```
+Сеттер, переключающий стили кнопок в зависимости от того, какая нажата:
+```ts
+set selected(name: string); // принимает имя кнопки
+``` 
+
+### class Success extends Component\<ISuccess\>
+
+**Класс для отображения информации об успешной покупке**
+
+В конструкторе вешаем на кнопку слушатель с колбэком закрытия модального окна:
+```ts
+protected _message: HTMLElement;
+protected _button: HTMLButtonElement;
+
+constructor(container: HTMLElement, onClose: () => void);
+```
+Сеттер из интерфейса `ISuccess` добавляет в текст сообщения сумму покупки:
+```ts
+set total(value: number);
+```
+
+## Коммуникация
+
+### class PurchaseApi extends Api implements IPurchaseApi
+
+**Создан для удобной связи с сервером, расширяет базовый класс Api**
+
+В конструкторе принимает и записывает часть пути для получения контента:
+```ts
+readonly cdn: string;
+constructor(baseUrl: string, cdn: string, options?: RequestInit)
+```
+Имплементирует интерфейс с методами, которые являются обертками базовых, типизируют получаемые и отправляемые данные, вставляют нужные эндпоинты:
+```ts
+interface IPurchaseApi {
+  getProductList(): Promise<TProduct[]>; // также добавляет к ссылке каждой картинки объекта путь до контента
+  orderProducts(order: TOrder): Promise<TOrderResult>;
+}
+```
+
+## Основные события
+
+
+
+
+
 
 Берёт на себя функции по организации сообщения между двумя другими слоями. В проекте применяется событийно-ориентированный подход, поэтому для связи данных и отображения используется функционал брокера событий (`EventEmitter`). Через `index.ts` в инстанс брокера (events) императивно передаются названия возможных событий и функции, срабатывающие при их наступлении. При этом сам events передаётся в конструктор многих классов проекта, что позволяет обращаться к нему из их экземпляров.
 

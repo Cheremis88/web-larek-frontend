@@ -2,8 +2,8 @@ import {Api, ApiListResponse} from "./base/Api";
 import {TProduct, TOrder, TOrderResult} from "../types";
 
 export interface IPurchaseApi {
-  getProductList(): Promise<TProduct[]>
-  orderProducts(order: TOrder): Promise<TOrderResult>
+  getProductList(): Promise<TProduct[]>;
+  orderProducts(order: TOrder): Promise<TOrderResult>;
 }
 
 export class PurchaseApi extends Api implements IPurchaseApi {
