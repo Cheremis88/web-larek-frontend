@@ -7,8 +7,8 @@ import { cloneTemplate, ensureElement } from './utils/utils';
 import { AppState } from './components/AppState';
 import { Page } from './components/Page';
 import { Modal } from './components/Modal';
-import { Card, CardBasket, CardPreview, ICardActions } from './components/Card';
-import { TOrder, TOrderCommon, TOrderContacts, TOrderPayment, TOrderResult, TProduct } from './types';
+import { Card, CardBasket, CardPreview } from './components/Card';
+import { TOrderCommon, TOrderContacts, TOrderResult, TProduct } from './types';
 import { Basket } from './components/Basket';
 import { Form, Payment } from './components/Order';
 import { Success } from './components/Success';
@@ -55,7 +55,7 @@ events.on('preview:changed', (item: TProduct) => {
   const isInvaluable = appData.isInvaluable();
 
   const preview = new CardPreview(cloneTemplate(cardPreviewTemplate),
-     inBasket, isInvaluable, {onClick: () => events.emit('basket:changed', item)});
+    inBasket, isInvaluable, {onClick: () => events.emit('basket:changed', item)});
   
   modal.render({
     content: preview.render({
