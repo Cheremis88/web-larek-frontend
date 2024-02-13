@@ -49,11 +49,12 @@ yarn build
 
 "Веб-ларёк" построен на упрощённой модели MVP с применением событийно-ориентированного подхода: слой данных отделён от слоя отображения, а их связь организуется с помощью брокера событий `EventEmitter`. Через `index.ts` в экземпляр брокера императивно передаются названия основных событий и функции, срабатывающие при их наступлении.
 
-### Базовые классы
+## Базовые классы
 
-Надёжные товарищи, предоставляющие базовый функционал: Api, Component, EventEmitter.
+Надёжные товарищи, предоставляющие базовый функционал: **Api, Component, EventEmitter.**
 
-**class Api** - обеспечивает взаимодействие приложения с сервером.
+### class Api
+Обеспечивает взаимодействие приложения с сервером.
 
 Свойства хранят базовую ссылку для запросов к серверу и дополнительные опции:
 ```typescript
@@ -68,7 +69,8 @@ get(uri: string);
 post(uri: string, data: object, method: ApiPostMethods = 'POST');
 ```
 
-**abstract class Component<T>** - содержит основные методы для работы с DOM-элементами дочерних компонентов. Через дженерик принимает интерфейс класса-наследника, типизирующий данные при рендере.
+### abstract class Component\<T\>
+Содержит основные методы для работы с DOM-элементами дочерних компонентов. Через дженерик принимает интерфейс класса-наследника, типизирующий данные при рендере.
 
 Единственное свойство хранит контейнер дочернего компонента:
 ```typescript
@@ -76,14 +78,37 @@ protected constructor(protected readonly container: HTMLElement);
 ```
 Методы позволяют переключать класс, менять текст и изображение, скрывать и показывать элемент, менять активность кнопки и, конечно, рендерить весь компонент, наполняя его новыми данными и возвращая готовый контейнер:
 ```typescript
-toggleClass(element: HTMLElement, className: string, force?: boolean);
 protected setText(element: HTMLElement, value: unknown);
-setDisabled(element: HTMLElement, state: boolean);
 protected setHidden(element: HTMLElement);
 protected setVisible(element: HTMLElement);
 protected setImage(element: HTMLImageElement, src: string, alt?: string);
+setDisabled(element: HTMLElement, state: boolean);
+toggleClass(element: HTMLElement, className: string, force?: boolean);
 render(data?: Partial<T>): HTMLElement;
 ```
+
+### class EventEmitter implements IEvents
+Является инструментом создания, хранения и запуска событий.
+
+В конструкторе создает свойство и записывает в него `Map` для хранения названий событий и их уникальных колбэков:
+```typescript
+protected _events: Map<EventName, Set<Subscriber>>;
+```
+Имплементирует интерфейс с базовыми методами: подписка на событие, запуск события и создание колбэка с запуском события:
+```typescript
+interface IEvents {
+    on<T extends object>(event: EventName, callback: (data: T) => void): void;
+    emit<T extends object>(event: string, data?: T): void;
+    trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void;
+}
+```
+Функционал класса также позволяет подписаться сразу на все события, отписаться от конкретного события и очистить всю карту событий:
+```typescript
+onAll(callback: (event: EmitterEvent) => void);
+off(eventName: EventName, callback: Subscriber);
+offAll();
+```
+
 
 ### Слой данных
 
