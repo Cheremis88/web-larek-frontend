@@ -54,7 +54,7 @@ yarn build
 Надёжные товарищи, предоставляющие базовый функционал: **Api, Component, EventEmitter.**
 
 ### class Api
-Обеспечивает взаимодействие приложения с сервером.
+**Обеспечивает взаимодействие приложения с сервером.**
 
 Свойства хранят базовую ссылку для запросов к серверу и дополнительные опции:
 ```typescript
@@ -70,7 +70,7 @@ post(uri: string, data: object, method: ApiPostMethods = 'POST');
 ```
 
 ### abstract class Component\<T\>
-Содержит основные методы для работы с DOM-элементами дочерних компонентов. Через дженерик принимает интерфейс класса-наследника, типизирующий данные при рендере.
+**Содержит основные методы для работы с DOM-элементами дочерних компонентов. Через дженерик принимает интерфейс класса-наследника, типизирующий данные при рендере.**
 
 Единственное свойство хранит контейнер дочернего компонента:
 ```typescript
@@ -88,7 +88,7 @@ render(data?: Partial<T>): HTMLElement;
 ```
 
 ### class EventEmitter implements IEvents
-Является инструментом создания, хранения и запуска событий.
+**Является инструментом создания, хранения и запуска событий.**
 
 В конструкторе создает свойство и записывает в него `Map` для хранения названий событий и их уникальных колбэков:
 ```typescript
@@ -97,9 +97,9 @@ protected _events: Map<EventName, Set<Subscriber>>;
 Имплементирует интерфейс с базовыми методами: подписка на событие, запуск события и создание колбэка с запуском события:
 ```typescript
 interface IEvents {
-    on<T extends object>(event: EventName, callback: (data: T) => void): void;
-    emit<T extends object>(event: string, data?: T): void;
-    trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void;
+  on<T extends object>(event: EventName, callback: (data: T) => void): void;
+  emit<T extends object>(event: string, data?: T): void;
+  trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void;
 }
 ```
 Функционал класса также позволяет подписаться сразу на все события, отписаться от конкретного события и очистить всю карту событий:
@@ -109,10 +109,65 @@ off(eventName: EventName, callback: Subscriber);
 offAll();
 ```
 
+## Слой данных
 
-### Слой данных
+Приложение работает с данными, полученными от сервера либо непосредственно от пользователя. Первым делом через get-запрос загружается каталог товаров, каждый из которых представляет собой объект:
+```ts
+type TProduct = {
+  id: string,
+  description: string,
+  image: string,
+  title: string,
+  category: string,
+  price: number | null,
+}
+```
+Оформление заказа происходит в два шага: в первой форме пользователь выбирает способ оплаты и указывает адрес проживания, во второй - электронную почту и номер телефона:
+```ts
+export type TOrderPayment = {
+  payment: 'online' | 'offline',
+  address: string,
+}
 
-Представлен единственным классом `AppState`, отвечающим за хранение и обработку данных приложения.
+export type TOrderContacts = {
+  email: string,
+  phone: string,
+}
+```
+Через их пересечение создается общий тип введенных данных `TOrderCommon`. Прицепляем к нему общую сумму заказа и массив id купленных товаров - и получаем тип данных для корректного post-запроса `TOrder`. Если операция прошла успешно, в ответ приходит объект с id сессии и подтвержденной суммой покупки:
+```ts
+type TOrder = TOrderCommon & {total: number, items: string[]};
+
+type TOrderResult = {
+  id: string,
+  total: number,
+}
+```
+
+Работа с указанными данными возложена на класс `AppState`. Его поля хранят данные о полученных с сервера товарах, о добавленных в корзину, об открытой карточке и о полях заказа:
+```ts
+interface IAppState {
+  catalog: TProduct[] | [];
+  basket: Partial<TProduct>[];
+  preview: Partial<TProduct>;
+  order: TOrder;
+}
+```
+Через конструктор принимается экземпляр класса `EventEmitter` для управления событиями при изменении данных:
+```ts
+constructor(protected _events: IEvents) {}
+```
+А вот и методы класса `AppState`:
+```ts
+get totalPrice(): number; // считает общую стоимость товаров в корзине
+setCatalog(products: TProduct[]); // записывает данные о всех товарах
+setPreview(product: TProduct); // записывает данные о товаре, карточка которого открыта
+addToBasket(product: Partial<TProduct>): void; // добавляет товар в корзину
+deleteFromBasket(product: Partial<TProduct>): void; // удаляет товар из корзины
+isPurchased(product: TProduct): boolean; // проверяет, лежит ли товар в корзине
+isInvaluable(): boolean; // проверяет, является ли товар бесценным
+formOrder(): void; // добавляет нужные данные к заказу
+```
 
 Свойства:
 - `catalog`: массив всех полученных карточек товара;
