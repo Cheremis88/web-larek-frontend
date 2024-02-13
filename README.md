@@ -124,12 +124,12 @@ type TProduct = {
 ```
 Оформление заказа происходит в два шага: в первой форме пользователь выбирает способ оплаты и указывает адрес проживания, во второй - электронную почту и номер телефона:
 ```ts
-export type TOrderPayment = {
+type TOrderPayment = {
   payment: 'online' | 'offline',
   address: string,
 }
 
-export type TOrderContacts = {
+type TOrderContacts = {
   email: string,
   phone: string,
 }
@@ -143,6 +143,8 @@ type TOrderResult = {
   total: number,
 }
 ```
+
+### class AppState
 
 Работа с указанными данными возложена на класс `AppState`. Его поля хранят данные о полученных с сервера товарах, о добавленных в корзину, об открытой карточке и о полях заказа:
 ```ts
@@ -160,7 +162,7 @@ constructor(protected _events: IEvents) {}
 А вот и методы класса `AppState`:
 ```ts
 get totalPrice(): number; // считает общую стоимость товаров в корзине
-setCatalog(products: TProduct[]); // записывает данные о всех товарах
+setCatalog(products: TProduct[]); // записывает данные обо всех товарах
 setPreview(product: TProduct); // записывает данные о товаре, карточка которого открыта
 addToBasket(product: Partial<TProduct>): void; // добавляет товар в корзину
 deleteFromBasket(product: Partial<TProduct>): void; // удаляет товар из корзины
@@ -169,36 +171,96 @@ isInvaluable(): boolean; // проверяет, является ли товар
 formOrder(): void; // добавляет нужные данные к заказу
 ```
 
-Свойства:
-- `catalog`: массив всех полученных карточек товара;
-- `basket`: массив добавленных в корзину товаров;
-- `preview`: данные о товаре, карточка которого открыта;
-- `order`: данные из форм заказа для отправки на сервер.
+## Слой отображения
 
-Методы:
-- `setCatalog`: инициализирует каталог товаров, записывая в него полученные с сервера объекты;
-- `setPreview`: запоминает объект, карточку которого выбрали;
-- `isInvaluable`: проверяет, является ли открытый товар бесценным;
-- `checkProduct`: проверяет, лежит ли открытый товар в корзине;
-- `addToBasket`: добавляет товар в корзину;
-- `deleteFromBasket`: убирает товар из корзины;
-- `totalPrice` (геттер): считает общую стоимость товаров в корзине.
+Реализуется с помощью нескольких классов, описывающих отдельные компоненты приложения.
 
+### class Page extends Component\<IPage\>
 
-### Слой отображения
+**Отвечает за отрисовку карточек и счетчика корзины на главной странице**
 
-Реализуется с помощью нескольких классов, описывающих отдельные компоненты приложения:
+Свойства хранят нужные DOM-элементы, конструктор принимает контейнер `body` и экземпляр `EventEmitter`:
+```ts
+protected _counter: HTMLElement;
+protected _catalog: HTMLElement;
+protected _wrapper: HTMLElement;
+protected _basket: HTMLElement;
 
-- `Page`: компонент, отображающий данные на главной странице - каталог товаров и счётчик на корзине;
-- `Modal`: общее модальное окно, в котором рендерятся другие компоненты;
-- `Card`: карточка каталога на главной странице;
-- `CardPreview`: карточка открытого товара (возможно, наследуется от Card);
-- `Basket`: список товаров в корзине;
-- `CardBasket`: элемент товара в корзине;
-- `Order`: окно оформления заказа (возможно, будет два класса);
-- `Success`: окно успешной покупки.
+constructor(container: HTMLElement, protected events: IEvents);
+```
+Методы (сеттеры) соответствуют интерфейсу `IPage`:
+```ts
+set counter(value: number); // устанавливает нужное число на иконке корзины
+set catalog(items: HTMLElement[]); // рендерит карточки товаров из каталога
+set locked(value: boolean); // ставит и снимает блокировку прокрутки при открытии модального окна
+```
 
-Все они наследуются от базового класса `Component`, имеющего основные методы работы с отображением и разметкой: рендер, показ и скрытие элементов, установка изображений и текста.
+### class Modal extends Component\<IModalData\>
+
+**Рендерит внутри себя контент других компонентов**
+
+Свойство `_content` содержит DOM-элемент, содержимое которого будет заменяться:
+```ts
+protected _closeButton: HTMLButtonElement;
+protected _content: HTMLElement;
+constructor(container: HTMLElement, protected events: IEvents)
+```
+Методы позволяют открывать и закрывать модалку, а также менять контент внутри:
+```ts
+set content(value: HTMLElement); // заменяет дочерние DOM-элементы
+open();
+close();
+render(data: IModalData); // перезаписывает содержимое через сеттер content
+```
+
+### class Card extends Component\<TProduct\>
+
+**Работает с базовым типом карточки товара (на главной странице), является родителем классов CardPreview и CardBasket**
+
+Помимо общего контейнера, конструктор принимает колбэки для слушателей. Обошлись без `EventEmitter`:
+```ts
+protected _title: HTMLElement;
+protected _price: HTMLElement;
+protected _image?: HTMLImageElement;
+protected _category?: HTMLElement;
+protected _description?: HTMLElement;
+protected _button?: HTMLButtonElement;
+
+constructor(container: HTMLElement, actions: ICardActions);
+```
+Методы меняют текст или изображение в элементах полей с помощью родительских `setText` и `setImage`:
+```ts
+set title(value: string);
+set price(value: number | null);
+set image(value: string);
+set category(value: string);
+set description(value: string | string[]);
+```
+
+### class CardPreview extends Card implements ICardPreview
+
+**Карточка с описанием товара и кнопкой "Купить"/"Убрать"**
+
+Конструктор принимает параметры `inBasket` и `isInvaluable`, в зависимости от значений которых меняется текст и активность кнопки:
+```ts
+constructor(container: HTMLElement, inBasket: boolean, isInvaluable: boolean, actions: ICardActions);
+```
+Методы, непосредственно меняющие текст и активность кнопки:
+```ts
+setButtonText(result: boolean);
+setButtonState(result: boolean);
+```
+
+### class CardBasket extends Card
+
+**Мини-карточка товара в корзине с кнопкой удаления и порядковым номером**
+
+Через конструктор добавляется элемент с порядковым номером товара в корзине. Отдельных методов нет.
+```ts
+protected _index: HTMLElement;
+constructor(container: HTMLElement, index: number, actions: ICardActions)
+```
+
 
 ### Слой связи (презентер)
 

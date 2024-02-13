@@ -1,6 +1,5 @@
 import {Component} from "./base/Component";
 import {TProduct} from "../types";
-import {bem, createElement, ensureElement} from "../utils/utils";
 
 export interface ICardActions {
     onClick: (event: MouseEvent) => void;

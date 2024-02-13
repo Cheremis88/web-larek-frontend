@@ -1,5 +1,5 @@
 import {IAppState, TProduct, TOrder} from "../types";
-import { EventEmitter, IEvents } from "./base/EventEmitter";
+import { IEvents } from "./base/EventEmitter";
 
 export class AppState implements IAppState {
   catalog: TProduct[] = [];
