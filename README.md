@@ -11,7 +11,7 @@
 - src/pages/index.html — HTML-файл главной страницы
 - src/types/index.ts — файл с типами
 - src/index.ts — точка входа приложения
-- src/styles/styles.scss — корневой файл стилей
+- src/scss/styles.scss — корневой файл стилей
 - src/utils/constants.ts — файл с константами
 - src/utils/utils.ts — файл с утилитами
 
@@ -102,7 +102,7 @@ interface IEvents {
   trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void;
 }
 ```
-Функционал класса также позволяет подписаться сразу на все события, отписаться от конкретного события и очистить всю карту событий:
+Функционал класса также позволяет подписаться сразу на все события, отписаться от конкретного события и очистить всю коллекцию событий:
 ```typescript
 onAll(callback: (event: EmitterEvent) => void);
 off(eventName: EventName, callback: Subscriber);
@@ -168,6 +168,8 @@ addToBasket(product: Partial<TProduct>): void; // добавляет товар 
 deleteFromBasket(product: Partial<TProduct>): void; // удаляет товар из корзины
 isPurchased(product: TProduct): boolean; // проверяет, лежит ли товар в корзине
 isInvaluable(): boolean; // проверяет, является ли товар бесценным
+checkPaymentForm(): boolean; // проверка значений полей заказа (оплата, адрес)
+checkContactsForm(): boolean; // проверка значений полей заказа (почта, телефон)
 formOrder(): void; // добавляет нужные данные к заказу
 ```
 

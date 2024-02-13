@@ -105,22 +105,22 @@ events.on('order:open', () => {
 
   modal.render({
     content: payment.render({
-      valid: false,
-      selected: ''
+      valid: appData.checkPaymentForm(),
+      selected: appData.order.payment
     })
   });
 });
 
 events.on('order:changed', (data: {field: keyof TOrderCommon, value: string}) => {
   appData.order[data.field] = data.value;
-  payment.valid = !!appData.order.payment && !!appData.order.address;
-  order.valid = !!appData.order.email && !!appData.order.phone;
+  payment.valid = appData.checkPaymentForm();
+  order.valid = appData.checkContactsForm();
 });
 
 events.on('payment:submit', () => {
   modal.render({
     content: order.render({
-      valid: false
+      valid: appData.checkContactsForm()
     })
   });
 });

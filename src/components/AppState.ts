@@ -47,6 +47,14 @@ export class AppState implements IAppState {
     return !this.preview.price;
   }
 
+  checkPaymentForm(): boolean {
+    return !!this.order.payment && !!this.order.address;
+  }
+
+  checkContactsForm(): boolean {
+    return !!this.order.email && !!this.order.phone;
+  }
+
   formOrder(): void {
     this.order.total = this.totalPrice;
     this.order.items = this.basket.map(item => item.id);

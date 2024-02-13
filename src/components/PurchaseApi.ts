@@ -1,4 +1,4 @@
-import {Api, ApiListResponse} from "./base/Api";
+import {Api, ApiListResponse} from "./base/Apia";
 import {TProduct, TOrder, TOrderResult} from "../types";
 
 export interface IPurchaseApi {
